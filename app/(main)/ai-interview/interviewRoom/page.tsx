@@ -1,18 +1,45 @@
-import React from 'react'
-import Agent from '../components/Agent'
-import { get } from 'http'
-import { getCurrentUser } from '../../../../actions/ai-interview'
+import Agent from "../components/Agent";
+import { db } from "@/lib/prisma";
+import { getCurrentUser } from "../../../../actions/ai-interview";
 
-const interviewRoom = async () => {
+const InterviewRoom = async () => {
 
   const user = await getCurrentUser();
 
+  if (!user) {
+    return <div>Unauthorized</div>;
+  }
+
+  const interview = await db.interview.findFirst({
+    where: {
+      userId: user.id,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  if (!interview) {
+    return <div>No Interview Found</div>;
+  }
+
   return (
     <>
-      <h3 className='text-2xl font-bold ml-12'>Interview Generation</h3>
-      <Agent userName={user?.fullName || user?.firstname || user?.username || "User"} userId={user?.clerkId} type="generate" />
-    </>
-  )
-}
+      <h3 className="text-2xl font-bold ml-12">
+        Interview Generation
+      </h3>
 
-export default interviewRoom
+      <Agent
+        userName={user.username || "User"}
+        userId={user.id}
+        type={interview.type}
+        role={interview.role}
+        level={interview.level}
+        techstack={interview.techstack}
+        amount={interview.amount}
+/>
+    </>
+  );
+};
+
+export default InterviewRoom;

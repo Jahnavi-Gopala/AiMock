@@ -22,19 +22,24 @@ const Agent = ({
   userName,
   userId,
   type,
+  level,
+  techstack,
+  amount,
+  role
 }: {
   userName: string;
   userId: string;
   type: string;
+  level: string;
+  techstack: string;
+  amount: number;
+  role: string;
 }) => {
   const { user, isLoaded } = useUser();
   const router = useRouter();
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [status, setStatus] = useState<CallStatus>(CallStatus.INACTIVE);
   const [messages, setMessages] = useState<SavedMessage[]>([]);
-
-  
-  const lastMessage = messages[messages.length - 1];
   
   useEffect(() => {
       const onCallStart =() =>{
@@ -86,6 +91,10 @@ const Agent = ({
             variableValues:{
                 userName : userName,
                 userId: userId,
+                type: type,
+                level: level,
+                techstack: techstack,
+                amount: amount
             }
         } )
     }
