@@ -12,9 +12,9 @@ const InterviewRoom = async () => {
 
   const interview = await db.interview.findFirst({
     where: {
-      userId: user.id,
+      userId: user.clerkId,
     },
-    orderBy: {
+    orderBy: { 
       createdAt: "desc",
     },
   });
