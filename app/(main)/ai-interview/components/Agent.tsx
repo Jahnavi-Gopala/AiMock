@@ -33,73 +33,73 @@ const Agent = ({
   const [status, setStatus] = useState<CallStatus>(CallStatus.INACTIVE);
   const [messages, setMessages] = useState<SavedMessage[]>([]);
 
-  if (!isLoaded) return null;
-
+  
   const lastMessage = messages[messages.length - 1];
-
+  
   useEffect(() => {
-    const onCallStart =() =>{
-        setStatus(CallStatus.ACTIVE);
+      const onCallStart =() =>{
+          setStatus(CallStatus.ACTIVE);
+        }
+        
+        const onCallEnd = () => {
+            setStatus(CallStatus.FINISHED);
+        }
+        
+        const onMessage = (message: Message) =>{
+            if(message.type === "transcript" && message.transcriptType === "final"){
+                const newMessage = { role:message.role, content:message.transcript };
+                setMessages((prev) => [...prev, newMessage]);
+            }
+        }
+        const onSpeechStart = () => setIsSpeaking(true);
+        const onSpeechEnd = () => setIsSpeaking(false);
+        
+        const onError = (error: Error) => {
+            console.error("Call error:", error);
+        }
+        
+        vapi.on("call-start", onCallStart);
+        vapi.on("call-end", onCallEnd);
+        vapi.on("message", onMessage);
+        vapi.on("speech-start", onSpeechStart);
+        vapi.on("speech-end", onSpeechEnd);
+        vapi.on("error", onError);
+        
+        return () => {
+            vapi.off("call-start", onCallStart);
+            vapi.off("call-end", onCallEnd);
+            vapi.off("message", onMessage);
+            vapi.off("speech-start", onSpeechStart);
+            vapi.off("speech-end", onSpeechEnd);
+            vapi.off("error", onError);
+        };
+    }, []);
+    useEffect(()=>{
+        if(status === CallStatus.FINISHED){
+            router.push("/ai-interview");
+        }
+    },[messages, status, type, userId])
+    
+    const handleCall = async()=>{
+        setStatus(CallStatus.CONNECTING);
+        await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_URL!, {
+            variableValues:{
+                userName : userName,
+                userId: userId,
+            }
+        } )
     }
-
-    const onCallEnd = () => {
+    
+    const  handleDisconnect = () => {
         setStatus(CallStatus.FINISHED);
+        vapi.stop();
     }
+    
+    const latestMessage = messages[messages.length - 1]?.content || "";    
+    
+    const isCallInactiveOrFinished = status === CallStatus.INACTIVE || status === CallStatus.FINISHED;
 
-    const onMessage = (message: Message) =>{
-        if(message.type === "transcript" && message.transcriptType === "final"){
-            const newMessage = { role:message.role, content:message.transcript };
-            setMessages((prev) => [...prev, newMessage]);
-        }
-    }
-    const onSpeechStart = () => setIsSpeaking(true);
-    const onSpeechEnd = () => setIsSpeaking(false);
-
-    const onError = (error: Error) => {
-        console.error("Call error:", error);
-    }
-
-    vapi.on("call-start", onCallStart);
-    vapi.on("call-end", onCallEnd);
-    vapi.on("message", onMessage);
-    vapi.on("speech-start", onSpeechStart);
-    vapi.on("speech-end", onSpeechEnd);
-    vapi.on("error", onError);
-
-    return () => {
-        vapi.off("call-start", onCallStart);
-        vapi.off("call-end", onCallEnd);
-        vapi.off("message", onMessage);
-        vapi.off("speech-start", onSpeechStart);
-        vapi.off("speech-end", onSpeechEnd);
-        vapi.off("error", onError);
-    };
-  }, []);
-  useEffect(()=>{
-      if(status === CallStatus.FINISHED){
-        router.push("/ai-interview");
-      }
-  },[messages, status, type, userId])
-
-  const handleCall = async()=>{
-    setStatus(CallStatus.CONNECTING);
-    await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_URL!, {
-        variableValues:{
-            userName : userName,
-            userId: userId,
-        }
-    } )
-  }
-
-  const  handleDisconnect = () => {
-    setStatus(CallStatus.FINISHED);
-    vapi.stop();
-  }
-
-  const latestMessage = messages[messages.length - 1]?.content || "";    
-
-  const isCallInactiveOrFinished = status === CallStatus.INACTIVE || status === CallStatus.FINISHED;
-
+    if (!isLoaded) return null;
   return (
     <div className="px-4 sm:px-8 lg:px-16 py-6">
 
