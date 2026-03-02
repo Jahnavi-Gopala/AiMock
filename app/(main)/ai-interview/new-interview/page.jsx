@@ -1,4 +1,4 @@
-import AiForm from './components/AiForm'
+import AiForm from '../components/AiForm'
 
 const FormPage = () => {
   return (

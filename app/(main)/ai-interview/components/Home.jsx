@@ -1,13 +1,8 @@
-
-import { useUser } from "@clerk/nextjs";
+"use client"
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import InterviewCard from "./InterviewCard";
-import { useEffect, useState } from "react";
-import { Suspense } from "react";
-import { BarLoader } from "react-spinners";
-import { dummyInterviews } from "../new/constants";
 import { getCurrentUser, getInterviewByUserId } from "@/actions/ai-interview";
 
 
