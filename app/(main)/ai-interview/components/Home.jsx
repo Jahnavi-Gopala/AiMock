@@ -11,14 +11,14 @@ import { getCurrentUser, getInterviewByUserId } from "../../../../actions/ai-int
 
  async function Home() {
   const user = await getCurrentUser();
-  const { isLoaded } = useUser();
+  // const { isLoaded } = useUser();
 
   const userInterview = await getInterviewByUserId(user?.id);
 
   const hasPastInterviews = userInterview?.length > 0;
 
-  if (!isLoaded) 
-    return <Suspense  fallback={<BarLoader className="mt-4 " width={"100%"} color="gray"/>}>  </Suspense>;
+  // if (!isLoaded) 
+  //   return <Suspense  fallback={<BarLoader className="mt-4 " width={"100%"} color="gray"/>}>  </Suspense>;
 
   return (
     <>
