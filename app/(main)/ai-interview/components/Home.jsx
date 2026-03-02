@@ -8,49 +8,48 @@ import { useEffect, useState } from "react";
 import { Suspense } from "react";
 import { BarLoader } from "react-spinners";
 import { dummyInterviews } from "../new/constants";
+import { getCurrentUser, getInterviewByUserId } from "@/actions/ai-interview";
 
 
-// // import { getCurrentUser } from "@/lib/actions/auth.actions";
-// import {
-//   getInterviewsByUserId,
-//   getLatestInterviews,
-// } from "@/lib/actions/general.action";
-
- function Home() {
-  const { user, isLoaded } = useUser();
-
-  const [userInterviews, setUserInterviews] = useState([]);
-  const [allInterview, setAllInterview] = useState([]);
-
-  useEffect(() => {
-    if (!isLoaded || !user?.id) return;
-
-    const fetchData = async () => {
-      try {
-        const [pastRes, upcomingRes] = await Promise.all([
-          fetch(`/api/interviews/past?userId=${user.id}`),
-          fetch(`/api/interviews/latest?userId=${user.id}`),
-        ]);
-
-        const pastData = await pastRes.json();
-        const upcomingData = await upcomingRes.json();
-
-        setUserInterviews(pastData || []);
-        setAllInterview(upcomingData || []);
-      } catch (err) {
-        console.error("Error fetching interviews", err);
-      }
-    };
-
-    fetchData();
-  }, [isLoaded, user?.id]);
-
+ async function Home() {
+  const user = await getCurrentUser();
+  const userInterviews = await getInterviewByUserId(user?.id);
   const hasPastInterviews = userInterviews.length > 0;
-  const hasUpcomingInterviews = allInterview.length > 0;
 
-  if (!isLoaded) return <Suspense 
-                fallback={<BarLoader className="mt-4 " width={"100%"} color="gray"/>}>
-                </Suspense>;
+  // const { user, isLoaded } = useUser();
+
+  // const [userInterviews, setUserInterviews] = useState([]);
+  // const [allInterview, setAllInterview] = useState([]);
+
+  // useEffect(() => {
+  //   if (!isLoaded || !user?.id) return;
+
+  //   const fetchData = async () => {
+  //     try {
+  //       const [pastRes, upcomingRes] = await Promise.all([
+  //         fetch(`/api/interviews/past?userId=${user.id}`),
+  //         fetch(`/api/interviews/latest?userId=${user.id}`),
+  //       ]);
+
+  //       const pastData = await pastRes.json();
+  //       const upcomingData = await upcomingRes.json();
+
+  //       setUserInterviews(pastData || []);
+  //       setAllInterview(upcomingData || []);
+  //     } catch (err) {
+  //       console.error("Error fetching interviews", err);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, [isLoaded, user?.id]);
+
+  // const hasPastInterviews = userInterviews.length > 0;
+  // const hasUpcomingInterviews = allInterview.length > 0;
+
+  // if (!isLoaded) return <Suspense 
+  //               fallback={<BarLoader className="mt-4 " width={"100%"} color="gray"/>}>
+  //               </Suspense>;
 
   return (
     <>
@@ -62,7 +61,7 @@ import { dummyInterviews } from "../new/constants";
           </p>
 
           <Button asChild className="btn-primary max-sm:w-full">
-            <Link href="/ai-interview/interviewRoom">Start an Interview</Link>
+            <Link href="/ai-interview/new-interview">Start an Interview</Link>
           </Button>
         </div>
 
@@ -79,7 +78,7 @@ import { dummyInterviews } from "../new/constants";
       <section className="flex flex-col gap-6 mt-8">
         <h2 className="text-3xl ">{user?.fullName? `${user.fullName}'s`: "Your"} Past Interviews
 </h2>
-          {/* {hasPastInterviews ? (
+          {hasPastInterviews ? (
             userInterviews?.map((interview) => (
               interview?.id ? (
                 <InterviewCard
@@ -92,11 +91,11 @@ import { dummyInterviews } from "../new/constants";
                 createdAt={interview.createdAt}
                 />
                 ) : null)
-                )) : ( */}
-            {/* <p>You haven&apos;t taken any interviews yet</p> */}
-          {/* )} */}
+                )) : (
+            <p>You haven&apos;t taken any interviews yet</p>
+          )}
 
-          <div className="flex gap-4 overflow-x-auto no-scrollbar py-2">
+          {/* <div className="flex gap-4 overflow-x-auto no-scrollbar py-2">
             {dummyInterviews.length > 0 ? (
               dummyInterviews.map((interview) => (
                 <div
@@ -122,7 +121,7 @@ import { dummyInterviews } from "../new/constants";
             ) : (
               <p>You haven&apos;t taken any interviews yet </p> 
             )}
-          </div>
+          </div> */}
             
       </section>
 

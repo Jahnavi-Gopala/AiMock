@@ -1,13 +1,12 @@
 import React from 'react'
 import AiForm from './components/AiForm'
-import Home from './components/Home'
 
-const AiInterview = () => {
+const FormPage = () => {
   return (
     <div>
-      <Home />
+        <AiForm/>
     </div>
   )
 }
 
-export default AiInterview
+export default FormPage
