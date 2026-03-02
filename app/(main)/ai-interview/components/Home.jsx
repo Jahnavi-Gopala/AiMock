@@ -9,18 +9,13 @@ import { Suspense } from "react";
 import { BarLoader } from "react-spinners";
 import { dummyInterviews } from "../new/constants";
 
-
-// // import { getCurrentUser } from "@/lib/actions/auth.actions";
-// import {
-//   getInterviewsByUserId,
-//   getLatestInterviews,
-// } from "@/lib/actions/general.action";
-
- function Home() {
-  const { user, isLoaded } = useUser();
-
+ async function Home() {
+  const user = await getCurrentUser();
+  const { isLoaded } = useUser();
   const [userInterviews, setUserInterviews] = useState([]);
   const [allInterview, setAllInterview] = useState([]);
+
+  const userInterview = await getInterviewByUserId(user?.id);
 
   useEffect(() => {
     if (!isLoaded || !user?.id) return;
@@ -45,12 +40,10 @@ import { dummyInterviews } from "../new/constants";
     fetchData();
   }, [isLoaded, user?.id]);
 
-  const hasPastInterviews = userInterviews.length > 0;
-  const hasUpcomingInterviews = allInterview.length > 0;
+  const hasPastInterviews = userInterview?.length > 0;
 
-  if (!isLoaded) return <Suspense 
-                fallback={<BarLoader className="mt-4 " width={"100%"} color="gray"/>}>
-                </Suspense>;
+  if (!isLoaded) 
+    return <Suspense  fallback={<BarLoader className="mt-4 " width={"100%"} color="gray"/>}>  </Suspense>;
 
   return (
     <>
@@ -79,7 +72,7 @@ import { dummyInterviews } from "../new/constants";
       <section className="flex flex-col gap-6 mt-8">
         <h2 className="text-3xl ">{user?.fullName? `${user.fullName}'s`: "Your"} Past Interviews
 </h2>
-          {/* {hasPastInterviews ? (
+          {hasPastInterviews ? (
             userInterviews?.map((interview) => (
               interview?.id ? (
                 <InterviewCard
@@ -92,11 +85,11 @@ import { dummyInterviews } from "../new/constants";
                 createdAt={interview.createdAt}
                 />
                 ) : null)
-                )) : ( */}
-            {/* <p>You haven&apos;t taken any interviews yet</p> */}
-          {/* )} */}
+                )) : (
+            <p>You haven&apos;t taken any interviews yet</p>
+          )}
 
-          <div className="flex gap-4 overflow-x-auto no-scrollbar py-2">
+          {/* <div className="flex gap-4 overflow-x-auto no-scrollbar py-2">
             {dummyInterviews.length > 0 ? (
               dummyInterviews.map((interview) => (
                 <div
@@ -122,49 +115,9 @@ import { dummyInterviews } from "../new/constants";
             ) : (
               <p>You haven&apos;t taken any interviews yet </p> 
             )}
-          </div>
+          </div> */}
             
       </section>
-
-      {/* <section className="flex flex-col gap-6 mt-8 "> */}
-        {/* <h2 className="text-3xl">Take Interviews</h2>
-
-        <div className="flex flex-row gap-4 overflow-x-auto py-2">
-          {dummyInterviews.length > 0 ? (
-              dummyInterviews.map((interview) => (
-                <InterviewCard
-                  key={`dummy-past-${interview.id}`}   // ✅ unique key
-                  userId={interview.userId}
-                  id={interview.id}
-                  role={interview.role}
-                  type={interview.type}
-                  techstack={interview.techstack}
-                  createdAt={interview.createdAt}
-                />
-              ))
-            ) : (
-              <p>No dummy interviews</p>
-            )}
-          </div> */}
-          {/* {hasUpcomingInterviews ? (
-            allInterview?.map((interview) => (
-              interview?.id ? (
-                <InterviewCard
-                key={interview.id}
-                userId={user?.id}
-                id={interview.id}
-                role={interview.role}
-                type={interview.type}
-                techstack={interview.techstack}
-                createdAt={interview.createdAt}
-                />
-                ) : null)
-                )
-                ) : (
-                  <p>There are no interviews available</p>
-                  )} */}
-                  {/* <p>There are no interviews available</p> */}
-      {/* </section> */}
       
     </>
   );
