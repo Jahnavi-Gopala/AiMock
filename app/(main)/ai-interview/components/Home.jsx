@@ -12,33 +12,8 @@ import { dummyInterviews } from "../new/constants";
  async function Home() {
   const user = await getCurrentUser();
   const { isLoaded } = useUser();
-  const [userInterviews, setUserInterviews] = useState([]);
-  const [allInterview, setAllInterview] = useState([]);
 
   const userInterview = await getInterviewByUserId(user?.id);
-
-  useEffect(() => {
-    if (!isLoaded || !user?.id) return;
-
-    const fetchData = async () => {
-      try {
-        const [pastRes, upcomingRes] = await Promise.all([
-          fetch(`/api/interviews/past?userId=${user.id}`),
-          fetch(`/api/interviews/latest?userId=${user.id}`),
-        ]);
-
-        const pastData = await pastRes.json();
-        const upcomingData = await upcomingRes.json();
-
-        setUserInterviews(pastData || []);
-        setAllInterview(upcomingData || []);
-      } catch (err) {
-        console.error("Error fetching interviews", err);
-      }
-    };
-
-    fetchData();
-  }, [isLoaded, user?.id]);
 
   const hasPastInterviews = userInterview?.length > 0;
 
@@ -73,7 +48,7 @@ import { dummyInterviews } from "../new/constants";
         <h2 className="text-3xl ">{user?.fullName? `${user.fullName}'s`: "Your"} Past Interviews
 </h2>
           {hasPastInterviews ? (
-            userInterviews?.map((interview) => (
+            userInterview?.map((interview) => (
               interview?.id ? (
                 <InterviewCard
                 key={String(interview.id)}
