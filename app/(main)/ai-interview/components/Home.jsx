@@ -7,7 +7,7 @@ import InterviewCard from "./InterviewCard";
 import { useEffect, useState } from "react";
 import { Suspense } from "react";
 import { BarLoader } from "react-spinners";
-import { getCurrentUser, getInterviewByUserId } from "../../../../actions/ai-interview";
+import { dummyInterviews } from "../new/constants";
 
  async function Home() {
   const user = await getCurrentUser();
@@ -63,6 +63,34 @@ import { getCurrentUser, getInterviewByUserId } from "../../../../actions/ai-int
                 )) : (
             <p>You haven&apos;t taken any interviews yet</p>
           )}
+
+          {/* <div className="flex gap-4 overflow-x-auto no-scrollbar py-2">
+            {dummyInterviews.length > 0 ? (
+              dummyInterviews.map((interview) => (
+                <div
+                  key={`dummy-past-${interview.id}`}
+                  className="
+                    flex-shrink-0
+                    w-full
+                    sm:w-1/2
+                    lg:w-1/4
+                  "
+                >
+                <InterviewCard
+                  key={`dummy-past-${interview.id}`}   // ✅ unique key
+                  userId={interview.userId}
+                  id={interview.id}
+                  role={interview.role}
+                  type={interview.type}
+                  techstack={interview.techstack}
+                  createdAt={interview.createdAt}
+                />
+                </div>
+              ))
+            ) : (
+              <p>You haven&apos;t taken any interviews yet </p> 
+            )}
+          </div> */}
             
       </section>
       
