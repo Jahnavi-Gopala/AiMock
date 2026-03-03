@@ -15,11 +15,11 @@ function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user?.id) return;
+    if (!user?.clerkId) return;
 
     async function fetchData() {
       try {
-        const data = await getInterviewByUserId(user.id);
+        const data = await getInterviewByUserId(user.clerkId);
         setUserInterview(data || []);
       } catch (err) {
         console.error(err);
