@@ -21,8 +21,8 @@ function Home() {
   const currentUser = await getCurrentUser();
   setUser(currentUser);
 
-      if (currentUser?.clerkId) {
-        const interviews = await getInterviewByUserId(currentUser.clerkId);
+      if (currentUser?.id) {
+        const interviews = await getInterviewByUserId(currentUser.id);
         setUserInterview(interviews || []);
       }
     } catch (error) {

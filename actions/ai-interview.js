@@ -24,18 +24,19 @@ export async function getCurrentUser() {
 }
 
 export async function getInterviewByUserId(userId) {
-  const interview  = await db.interview.findMany({
-    where: {
-      userId: userId
-    },
-    orderBy: {
-      createdAt: "desc"
-    }
-  })
+  try {
+    const interviews = await db.interview.findMany({
+      where: {
+        userId: userId
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
 
-  return interview.docs.map((doc)=>({
-    id: doc.id,
-    ...doc.data()
-  })) 
-
+    return interviews;
+  } catch (error) {
+    console.error("Error fetching interviews:", error);
+    return [];
+  }
 }
