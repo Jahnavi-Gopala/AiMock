@@ -13,20 +13,27 @@ function Home() {
   const { isLoaded } = useUser();
   const [user, setUser] = useState(null);
   const [userInterview, setUserInterview] = useState([]);
+  const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
-    const fetchData = async () => {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
+  const fetchData = async () => {
+  try {
+  const currentUser = await getCurrentUser();
+  setUser(currentUser);
 
       if (currentUser?.id) {
         const interviews = await getInterviewByUserId(currentUser.id);
-        setUserInterview(interviews);
+        setUserInterview(interviews || []);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching interviews:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchData();
-  }, []);
+  fetchData();
+    }, []);
 
   if (!isLoaded || !user)
     return <BarLoader className="mt-4" width={"100%"} color="gray" />;
