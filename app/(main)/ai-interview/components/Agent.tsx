@@ -111,12 +111,10 @@ const Agent = ({
       } 
 
       if (status === CallStatus.FINISHED) {
-      if (type === "generate") {
         router.push(`/ai-interview/${interviewId}/feedback`);
       } else {
         handleGenerateFeedback(messages);
       }
-    }
     },[messages, status, feedbackId, interviewId, router, type, userId])
 
     // useEffect(()=>{
