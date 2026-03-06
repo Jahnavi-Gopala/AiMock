@@ -37,6 +37,7 @@ const InterviewRoom = async () => {
         level={interview.level}
         techstack={interview.techstack}
         amount={interview.amount}
+        interviewId={interview.id}
 />
     </>
   );
