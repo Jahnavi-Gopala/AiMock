@@ -7,38 +7,36 @@ import { Button } from "@/components/ui/button";
 import InterviewCard from "./InterviewCard";
 import { useEffect, useState } from "react";
 import { BarLoader } from "react-spinners";
-import { getCurrentUser, getInterviewByUserId } from "../../../../actions/ai-interview";
+import { getInterviewByUserId } from "../../../../actions/ai-interview";
 
 function Home() {
-  const { isLoaded } = useUser();
-  const [user, setUser] = useState(null);
+  const { user, isLoaded } = useUser();
   const [userInterview, setUserInterview] = useState([]);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  const fetchData = async () => {
-  try {
-  const currentUser = await getCurrentUser();
-  setUser(currentUser);
+    if (!user?.id) return;
 
-      if (currentUser?.id) {
-        const interviews = await getInterviewByUserId(currentUser.id);
-        setUserInterview(interviews || []);
+    async function fetchData() {
+      try {
+        const data = await getInterviewByUserId(user.id);
+        setUserInterview(data || []);
+        console.log("Fetched interviews:", data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching interviews:", error);
-    } finally {
-      setLoading(false);
     }
-  };
 
-  fetchData();
-    }, []);
+    fetchData();
+  }, [user]);
 
-  if (!isLoaded || !user)
+  if (!isLoaded || loading) {
     return <BarLoader className="mt-4" width={"100%"} color="gray" />;
+  }
 
-  const hasPastInterviews = userInterview?.length > 0;
+  const hasPastInterviews = userInterview.length > 0;
 
   return (
     <>
@@ -50,7 +48,9 @@ function Home() {
           </p>
 
           <Button asChild className="btn-primary max-sm:w-full">
-            <Link href="/ai-interview/new-interview">Start an Interview</Link>
+            <Link href="/ai-interview/new-interview">
+              Start an Interview
+            </Link>
           </Button>
         </div>
 
@@ -65,9 +65,12 @@ function Home() {
 
       <section className="flex flex-col gap-6 mt-8">
         <h2 className="text-3xl">
-          {user?.fullName ? `${user.fullName}'s` : "Your"} Past Interviews
+          {user?.fullName
+            ? `${user.fullName}'s`
+            : "Your"}{" "}
+          Past Interviews
         </h2>
-
+        <div className="flex gap-4 overflow-x-auto no-scrollbar py-2">
         {hasPastInterviews ? (
           userInterview.map((interview) =>
             interview?.id ? (
@@ -85,6 +88,7 @@ function Home() {
         ) : (
           <p>You haven&apos;t taken any interviews yet</p>
         )}
+        </div>
       </section>
     </>
   );

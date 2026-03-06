@@ -1,5 +1,6 @@
 "use server";
 import { currentUser } from "@clerk/nextjs/server";
+import { db } from "@/lib/prisma";
 import { id } from "zod/v4/locales";
 
 export async function getCurrentUser() {
@@ -23,20 +24,23 @@ export async function getCurrentUser() {
   }
 }
 
-export async function getInterviewByUserId(userId) {
+export async function getInterviewByUserId(clerkUserId) {
   try {
     const interviews = await db.interview.findMany({
       where: {
-        userId: userId
+        user: {
+          clerkUserId: clerkUserId
+        }
       },
       orderBy: {
         createdAt: "desc"
       }
     });
-
+    console.log("Interviews fetched from DB:", interviews);
     return interviews;
   } catch (error) {
     console.error("Error fetching interviews:", error);
     return [];
   }
 }
+

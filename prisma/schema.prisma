@@ -43,6 +43,7 @@ model User{
   resume         Resume?
   coverLetter    CoverLetter[]
   interview      Interview[]
+  feedback       Feedback[]
 }
 
 model Interview {
@@ -57,6 +58,22 @@ model Interview {
   coverImage String?
   questions String
   createdAt DateTime @default(now())
+  feedback Feedback[]
+}
+
+model Feedback {
+  id                  String   @id @default(cuid())
+  interviewId         String
+  userId              String
+  totalScore          Int
+  categoryScores      Json
+  strengths           Json[]
+  areasForImprovement Json[]
+  finalAssessment     String
+  createdAt           DateTime @default(now())
+
+  interview Interview @relation(fields: [interviewId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
 }
 
 model Assessment{

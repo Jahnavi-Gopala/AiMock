@@ -55,12 +55,12 @@ const InterviewCard = ({ id, userId, role, type, techstack, createdAt }) => {
                     <Button className='btn-primary'>
                         <Link href={feedback 
                             ? `/ai-interview/${id}/feedback` 
-                            : `/ai-interview/${id}`}>
+                            : `/ai-interview/${id}/feedback`}>
                         {feedback ? 'Check Feedback' : 'View Interview'}
                          </Link>
                     </Button>
                 </div>
-            </div>
+            </div> 
         </div>
     )
 }
