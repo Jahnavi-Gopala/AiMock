@@ -52,8 +52,8 @@ export async function createFeedback(params: CreateFeedbackParams) {
         userId,
         totalScore,
         categoryScores,
-        strengths,
-        areasForImprovement,
+        strengths: strengths ?? [],
+        areasForImprovement: areasForImprovement ?? [],
         finalAssessment,
       },
     });
