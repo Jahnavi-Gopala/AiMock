@@ -67,8 +67,8 @@ model Feedback {
   userId              String
   totalScore          Int
   categoryScores      Json
-  strengths           Json[]
-  areasForImprovement Json[]
+  strengths           Json
+  areasForImprovement Json
   finalAssessment     String
   createdAt           DateTime @default(now())
 
