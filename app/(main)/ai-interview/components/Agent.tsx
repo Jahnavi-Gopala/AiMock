@@ -108,7 +108,8 @@ const Agent = ({
           router.push("/ai-interview");
         }
         
-      } 
+      }
+      
 
       if (status === CallStatus.FINISHED) {
         router.push(`/ai-interview/${interviewId}/feedback`);
@@ -117,11 +118,11 @@ const Agent = ({
       }
     },[messages, status, feedbackId, interviewId, router, type, userId])
 
-    // useEffect(()=>{
-    //     if(status === CallStatus.FINISHED){
-    //         router.push("/ai-interview");
-    //     }
-    // },[messages, status, type, userId])
+    useEffect(()=>{
+        if(status === CallStatus.FINISHED){
+            router.push("/ai-interview");
+        }
+    },[messages, status, type, userId])
     
     const handleCall = async()=>{
         setStatus(CallStatus.CONNECTING);
