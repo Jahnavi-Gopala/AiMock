@@ -6,6 +6,7 @@ import { cn } from "../new/utils";
 import { useRouter } from "next/navigation";
 import {vapi} from "../../../../lib/vapi.sdk";
 import { createFeedback } from "@/actions/feedback";
+import { stat } from "fs";
 
 enum CallStatus {
   INACTIVE = "INACTIVE",
@@ -86,68 +87,42 @@ const Agent = ({
         };
     }, []);
     
-    // useEffect(()=>{
-    //   if(messages.length > 0){
-    //     const latestMessage = messages[messages.length - 1];
-    //     setLastMessage(latestMessage.content);
-    //   }
+    useEffect(()=>{
+      if(messages.length > 0){
+        const latestMessage = messages[messages.length - 1];
+        setLastMessage(latestMessage.content);
+      }
 
-    //   const handleGenerateFeedback = async (messages: SavedMessage[]) => {
-    //     console.log("handle Generate Feedback here");
-    //     const { success, feedbackId: id } = await createFeedback({
-    //       interviewId: interviewId!,
-    //       userId: userId!,
-    //       transcript: messages,
-    //       feedbackId,
-    //     });
+      const handleGenerateFeedback = async (messages: SavedMessage[]) => {
+        console.log("handle Generate Feedback here");
+        const { success, feedbackId: id } = await createFeedback({
+          interviewId: interviewId!,
+          userId: userId!,
+          transcript: messages,
+          feedbackId,
+        });
 
-    //     if (success && id) {
-    //     router.push(`/ai-interview/${interviewId}/feedback`);
-    //     } else {
-    //       console.log("Error saving feedback");
-    //       router.push("/ai-interview");
-    //     }
+        if (success && id) {
+        router.push(`/ai-interview/${interviewId}/feedback`);
+        } else {
+          console.log("Error saving feedback");
+          router.push("/ai-interview");
+        }
         
-    //   }
+      }
       
-    //   if (status === CallStatus.FINISHED) {
-    //     router.push(`/ai-interview/${interviewId}/feedback`);
-    //   } else {
-    //     handleGenerateFeedback(messages);
-    //   }
-    // },[messages, status, feedbackId, interviewId, router, type, userId])
-
-    // useEffect(()=>{
-    //     if(status === CallStatus.FINISHED){  
-    //       router.push("/ai-interview");
-    //     }
-    // },[messages, status, type, userId])
-
-    useEffect(() => {
-    if (messages.length > 0) {
-      const latestMessage = messages[messages.length - 1];
-      setLastMessage(latestMessage.content);
-    }
-
-    const handleGenerateFeedback = async () => {
-      const { success, feedbackId: id } = await createFeedback({
-        interviewId: interviewId!,
-        userId: userId!,
-        transcript: messages,
-        feedbackId,
-      });
-
-      if (success && id) {
+      if (status === CallStatus.FINISHED) {
         router.push(`/ai-interview/${interviewId}/feedback`);
       } else {
-        router.push("/ai-interview");
+        handleGenerateFeedback(messages);
       }
-    };
+    },[status, messages])
 
-    if (status === CallStatus.FINISHED) {
-      handleGenerateFeedback();
-    }
-  }, [status]);
+    useEffect(()=>{
+        if(status === CallStatus.FINISHED){  
+          router.push("/ai-interview");
+        }
+    },[messages, status, type, userId])
     
     const handleCall = async()=>{
         setStatus(CallStatus.CONNECTING);
