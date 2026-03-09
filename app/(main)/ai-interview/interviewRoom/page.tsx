@@ -30,7 +30,7 @@ const InterviewRoom = async () => {
       </h3>
 
       <Agent
-        userName={user.username || "User"}
+        userName={ user.fullName || user.firstname || "User" }
         userId={user.id}
         type={interview.type}
         role={interview.role}
@@ -38,6 +38,7 @@ const InterviewRoom = async () => {
         techstack={interview.techstack}
         amount={interview.amount}
         interviewId={interview.id}
+        intType = "interviewRoom"
         />
     </>
   );

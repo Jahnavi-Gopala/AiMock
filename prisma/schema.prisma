@@ -67,14 +67,14 @@ model Feedback {
   userId              String
   totalScore          Int
   categoryScores      Json
-  strengths           Json
-  areasForImprovement Json
+  strengths           String[]
+  areasForImprovement String[]
   finalAssessment     String
   createdAt           DateTime @default(now())
 
   interview Interview @relation(fields: [interviewId], references: [id])
   user      User      @relation(fields: [userId], references: [id])
-}
+} 
 
 model Assessment{
   id             String        @id @default(uuid())

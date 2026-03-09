@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import {vapi} from "../../../../lib/vapi.sdk";
 import { createFeedback } from "@/actions/feedback";
 import { stat } from "fs";
+import { int } from "zod";
 
 enum CallStatus {
   INACTIVE = "INACTIVE",
@@ -29,9 +30,10 @@ const Agent = ({
   amount,
   role,
   interviewId,
-  feedbackId
+  feedbackId,
+  intType
 }: {
-  userName: string;
+  userName: string ;
   userId: string;
   type: string;
   level: string;
@@ -40,6 +42,7 @@ const Agent = ({
   role: string;
   interviewId: string;
   feedbackId?: string;
+  intType: "interviewRoom";
 }) => {
   const { user, isLoaded } = useUser();
   const router = useRouter();
@@ -86,12 +89,14 @@ const Agent = ({
             vapi.off("error", onError);
         };
     }, []);
+
+    useEffect(() => {
+      if (messages.length > 0) {
+        setLastMessage(messages[messages.length - 1].content);
+      }
+    }, [messages]);
     
     useEffect(()=>{
-      if(messages.length > 0){
-        const latestMessage = messages[messages.length - 1];
-        setLastMessage(latestMessage.content);
-      }
 
       const handleGenerateFeedback = async (messages: SavedMessage[]) => {
         console.log("handle Generate Feedback here");
@@ -102,27 +107,24 @@ const Agent = ({
           feedbackId,
         });
 
-        if (success && id) {
-        router.push(`/ai-interview/${interviewId}/feedback`);
-        } else {
-          console.log("Error saving feedback");
-          router.push("/ai-interview");
+        console.log("FeedbackId: ", id);
+        console.log("interviewId: ", interviewId);
+        console.log("userId: ", userId);
+        console.log("messages: ", messages);
+
+        if (success) {
+          console.log("Feedback created successfully");
+          // router.push(`/feedback/${id}`);
+        }else{
+          console.error("Failed to create feedback");
+          // router.push(`/feedback/${feedbackId}`);
         }
-        
-      }
-      
+
+      };
       if (status === CallStatus.FINISHED) {
-        router.push(`/ai-interview/${interviewId}/feedback`);
-      } else {
         handleGenerateFeedback(messages);
       }
-    },[status, messages])
-
-    useEffect(()=>{
-        if(status === CallStatus.FINISHED){  
-          router.push("/ai-interview");
-        }
-    },[messages, status, type, userId])
+    },[status, feedbackId, interviewId, router, type, userId,messages])
     
     const handleCall = async()=>{
         setStatus(CallStatus.CONNECTING);

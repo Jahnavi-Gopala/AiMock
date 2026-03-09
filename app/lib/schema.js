@@ -74,33 +74,28 @@ export const coverLetterSchema = z.object({
 
 export const feedbackSchema = z.object({
   totalScore: z.number(),
-  categoryScores: z.tuple([
-    z.object({
-      name: z.literal("Communication Skills"),
+  categoryScores: z.object({
+    "Communication Skills": z.object({
       score: z.number(),
       comment: z.string(),
     }),
-    z.object({
-      name: z.literal("Technical Knowledge"),
+    "Technical Knowledge": z.object({
       score: z.number(),
       comment: z.string(),
     }),
-    z.object({
-      name: z.literal("Problem-Solving"),
+    "Problem-Solving": z.object({
       score: z.number(),
       comment: z.string(),
     }),
-    z.object({
-      name: z.literal("Cultural Fit"),
+    "Cultural Fit": z.object({
       score: z.number(),
       comment: z.string(),
     }),
-    z.object({
-      name: z.literal("Confidence & Clarity"),
+    "Confidence & Clarity": z.object({
       score: z.number(),
       comment: z.string(),
     }),
-  ]),
+}),
   strengths: z.array(z.string()),
   areasForImprovement: z.array(z.string()),
   finalAssessment: z.string(),
