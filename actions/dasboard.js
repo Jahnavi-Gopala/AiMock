@@ -1,122 +1,94 @@
 "use server";
 
-import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
+import { db } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const genAI =new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({
+    model : "gemini-2.5-flash",
+});
 
-export async function generateCoverLetter(data) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) throw new Error("User not found");
-
-  const prompt = `
-    Write a professional cover letter for a ${data.jobTitle} position at ${
-    data.companyName
-  }.
-    
-    About the candidate:
-    - Industry: ${user.industry}
-    - Years of Experience: ${user.experience}
-    - Skills: ${user.skills?.join(", ")}
-    - Professional Background: ${user.bio}
-    
-    Job Description:
-    ${data.jobDescription}
-    
-    Requirements:
-    1. Use a professional, enthusiastic tone
-    2. Highlight relevant skills and experience
-    3. Show understanding of the company's needs
-    4. Keep it concise (max 400 words)
-    5. Use proper business letter formatting in markdown
-    6. Include specific examples of achievements
-    7. Relate candidate's background to job requirements
-    
-    Format the letter in markdown.
-  `;
-
-  try {
+export const generateAIInsights = async (industry) => {
+    const prompt = `
+          Analyze the current state of the ${industry} industry and provide insights in ONLY the following JSON format without any additional notes or explanations:
+          {
+            "salaryRanges": [
+              { "role": "string", "min": number, "max": number, "median": number, "location": "string" }
+            ],
+            "growthRate": number,
+            "demandLevel": "HIGH" | "MEDIUM" | "LOW",
+            "topSkills": ["skill1", "skill2"],
+            "marketOutlook": "POSITIVE" | "NEUTRAL" | "NEGATIVE",
+            "keyTrends": ["trend1", "trend2"],
+            "recommendedSkills": ["skill1", "skill2"]
+          }
+          
+          IMPORTANT: Return ONLY the JSON. No additional text, notes, or markdown formatting.
+          Include at least 5 common roles for salary ranges.
+          Growth rate should be a percentage.
+          Include at least 5 skills and trends.
+        `;
     const result = await model.generateContent(prompt);
-    const content = result.response.text().trim();
+    const response = result.response;
+    const text = response.text();
+    const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
 
-    const coverLetter = await db.coverLetter.create({
-      data: {
-        content,
-        jobDescription: data.jobDescription,
-        companyName: data.companyName,
-        jobTitle: data.jobTitle,
-        status: "completed",
-        userId: user.id,
-      },
-    });
+    return JSON.parse(cleanedText);
+};
 
-    return coverLetter;
-  } catch (error) {
-    console.error("Error generating cover letter:", error.message);
-    throw new Error("Failed to generate cover letter");
-  }
-}
+export async function getIndustryInsights() {
+    const { userId} = await auth();
+    if(!userId) {
+        throw error("Unauthorized", { status: 401 });
+    }
+    const user = await db.user.findUnique({
+        where: {
+            clerkUserId: userId
+        }
+    })
+    if(!user) throw Error ("User not found");
+    if(!user.industryInsights){
+        const insights = await generateAIInsights(user.industry);
+        // const industryInsight = await db.industryInsight.upsert({
+        //     data: {
+        //         industry:user.industry,
+        //         ...insights,
+        //         nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        //     }
+        // });
+        // return industryInsight;
+        const industryInsight = await db.industryInsight.upsert({
+        where: {
+            industry: user.industry, // must be UNIQUE
+        },
 
-export async function getCoverLetters() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
+        create: {
+            industry: user.industry,
+            salaryRanges: insights.salaryRanges,
+            growthRate: insights.growthRate,
+            demandLevel: insights.demandLevel,
+            topSkills: insights.topSkills,
+            marketOutlook: insights.marketOutlook,
+            keyTrends: insights.keyTrends,
+            recommendedSkills: insights.recommendedSkills,
+            nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) throw new Error("User not found");
-
-  return await db.coverLetter.findMany({
-    where: {
-      userId: user.id,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-}
-
-export async function getCoverLetter(id) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) throw new Error("User not found");
-
-  return await db.coverLetter.findUnique({
-    where: {
-      id,
-      userId: user.id,
-    },
-  });
-}
-
-export async function deleteCoverLetter(id) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) throw new Error("User not found");
-
-  return await db.coverLetter.delete({
-    where: {
-      id,
-      userId: user.id,
-    },
-  });
+        update: {
+            salaryRanges: insights.salaryRanges,
+            growthRate: insights.growthRate,
+            demandLevel: insights.demandLevel,
+            topSkills: insights.topSkills,
+            marketOutlook: insights.marketOutlook,
+            keyTrends: insights.keyTrends,
+            recommendedSkills: insights.recommendedSkills,
+            lastUpdated: new Date(),
+            nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
+        });
+        return industryInsight;
+    }
+    return user.industryInsights;
 }
