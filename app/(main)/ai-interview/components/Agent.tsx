@@ -6,8 +6,6 @@ import { cn } from "../new/utils";
 import { useRouter } from "next/navigation";
 import {vapi} from "../../../../lib/vapi.sdk";
 import { createFeedback } from "@/actions/feedback";
-import { stat } from "fs";
-import { int } from "zod";
 
 enum CallStatus {
   INACTIVE = "INACTIVE",
@@ -112,12 +110,12 @@ const Agent = ({
         console.log("userId: ", userId);
         console.log("messages: ", messages);
 
-        if (success) {
+        if (success && id) {
           console.log("Feedback created successfully");
-          // router.push(`/feedback/${id}`);
+          router.push(`/ai-interview/${interviewId}/feedback`);
         }else{
           console.error("Failed to create feedback");
-          // router.push(`/feedback/${feedbackId}`);
+          router.push('/ai-interview');
         }
 
       };

@@ -32,6 +32,13 @@ export async function getInterviewByUserId(clerkUserId) {
           clerkUserId: clerkUserId
         }
       },
+      select: {
+        id: true,
+        role: true,
+        techstack: true,
+        type: true,
+        level: true,
+      },
       orderBy: {
         createdAt: "desc"
       }

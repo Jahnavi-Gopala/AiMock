@@ -107,7 +107,7 @@ export default function InterviewSetupPage() {
     toast.success("Interview setup completed 🚀");
 
     // Navigate to next page
-    router.push("/ai-interview/interviewRoom");   // change route if needed
+    router.push('/ai-interview/interviewRoom');   // change route if needed
     };
 
 

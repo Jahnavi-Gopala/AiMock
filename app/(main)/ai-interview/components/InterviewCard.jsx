@@ -53,10 +53,8 @@ const InterviewCard = ({ id, userId, role, type, techstack, createdAt }) => {
                 <div className='flex flex-row justify-between'>
                     {/* <DisplayTechIcons techstack={techstack}/> */}
                     <Button className='btn-primary'>
-                        <Link href={feedback 
-                            ? `/ai-interview/${id}/feedback` 
-                            : `/ai-interview/${id}/feedback`}>
-                        {feedback ? 'Check Feedback' : 'View Interview'}
+                        <Link href={`/ai-interview/${id}/feedback`}>
+                        View Feedback
                          </Link>
                     </Button>
                 </div>

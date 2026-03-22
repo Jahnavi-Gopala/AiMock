@@ -1,17 +1,22 @@
 "use server";
 
-import { currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
 import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
 import { feedbackSchema } from "../app/lib/schema";
-import { z } from "zod";
 
 
 export async function createFeedback(params: CreateFeedbackParams) {
-  const { interviewId, userId, transcript } = params;
+  const { interviewId, userId : clerkId, transcript } = params;
 
   try {
+    const user = await db.user.findUnique({
+      where: { clerkUserId: clerkId },
+    });
+    if (!user) {
+      throw new Error("User not found in database. Sync your Clerk user first.");
+    }
+
     const formattedTranscript = transcript
       .map(
         (sentence: { role: string; content: string }) =>
@@ -49,11 +54,11 @@ export async function createFeedback(params: CreateFeedbackParams) {
     const feedback = await db.feedback.create({
       data: {
         interviewId,
-        userId,
+        userId: user.id,
         totalScore,
         categoryScores,
-        strengths: JSON.parse(JSON.stringify(strengths)) ,
-        areasForImprovement: JSON.parse(JSON.stringify(areasForImprovement)) ,
+        strengths: strengths ,
+        areasForImprovement: areasForImprovement ,
         finalAssessment,
       },
     });
@@ -70,4 +75,22 @@ export async function createFeedback(params: CreateFeedbackParams) {
       error: "Error generating feedback",
     };
   }
+}
+
+export async function getFeedbackByInterviewId(
+  params: GetFeedbackByInterviewIdParams
+): Promise<Feedback | null> {
+  const { interviewId, userId: clerkId } = params;
+
+  const feedback = await db.feedback.findFirst({
+    where: {
+      interviewId: interviewId,
+      user: {
+        clerkUserId: clerkId, // Query through the relation!
+      },
+    },
+  });
+
+  // Cast as any or specific type to resolve the red squiggly
+  return feedback as any; 
 }
