@@ -3,14 +3,23 @@
 import { db } from "@/lib/prisma";
 import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
+import { auth } from "@clerk/nextjs/server";
 import { feedbackSchema } from "../app/lib/schema";
 // import { redirect } from "next/navigation";
 
 
 export async function createFeedback(params: CreateFeedbackParams) {
-  const { interviewId, userId : clerkId, transcript } = params;
+  // const { interviewId, userId : clerkId, transcript } = params;
 
   try {
+    const { userId: clerkId } = await auth();
+
+    if (!clerkId) {
+      throw new Error("Unauthorized");
+    }
+
+    const { interviewId, transcript } = params;
+
     const user = await db.user.findUnique({
       where: { clerkUserId: clerkId },
     });

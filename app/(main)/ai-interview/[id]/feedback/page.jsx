@@ -13,7 +13,7 @@ const FeedbackPage = async ({ params }) => {
   const { id } = await params;
   const { userId } = await auth();
 
-  if (!userId) redirect("/sign-in");
+  if (!userId) redirect("/sign-in"); 
 
   const interviews = await getInterviewByUserId(userId);
 
