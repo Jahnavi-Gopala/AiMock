@@ -30,7 +30,7 @@ import {
 import useFetch from "@/hooks/use-fetch";
 import { updateUser } from "@/actions/user";
 
-const OnboardingForm = ({ industries }) => {
+const OnboardingForm = ({ industries = []}) => {
   const router = useRouter();
   const [selectedIndustry, setSelectedIndustry] = useState("");
 
