@@ -3,7 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { redirect } from "next/dist/server/api-utils";
+import { redirect } from "next/navigation";
 
 const genAI =new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
@@ -49,8 +49,8 @@ export async function getIndustryInsights() {
             clerkUserId: userId
         }
     })
-    if (!user) {
-    return { redirect: "/onboarding" }; // ✅ return instead
+    if (!user || !user.industry) {
+        redirect("/onboarding");
     }
     if(!user.industryInsights){
         const insights = await generateAIInsights(user.industry);
