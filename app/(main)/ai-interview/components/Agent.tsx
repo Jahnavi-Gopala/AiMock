@@ -95,34 +95,47 @@ const Agent = ({
     }, [messages]);
     
     useEffect(()=>{
-
       const handleGenerateFeedback = async (messages: SavedMessage[]) => {
-        console.log("handle Generate Feedback here");
-        const { success, feedbackId: id } = await createFeedback({
-          interviewId: interviewId!,
-          userId: userId!,
-          transcript: messages,
-          feedbackId,
-        });
+      try {
+          console.log("handle Generate Feedback here");
+          // const { success, feedbackId: id } = await createFeedback({
+          //   interviewId: interviewId!,
+          //   userId: userId!,
+          //   transcript: messages,
+          //   feedbackId,
+          // });
 
-        console.log("FeedbackId: ", id);
-        console.log("interviewId: ", interviewId);
-        console.log("userId: ", userId);
-        console.log("messages: ", messages);
+        const res = await fetch(`/api/feedback`, {
+            method: "POST",
+            body: JSON.stringify({
+              interviewId,
+              transcript: messages,
+            }),
+          });
 
-        if (success && id) {
-          console.log("Feedback created successfully");
-          router.push(`/ai-interview/${interviewId}/feedback`);
-        }else{
-          console.error("Failed to create feedback");
-          router.push('/ai-interview');
-        }
-
+          const { success, feedbackId: id } = await res.json();
+  
+          console.log("FeedbackId: ", id);
+          console.log("interviewId: ", interviewId);
+          console.log("userId: ", userId);
+          console.log("messages: ", messages);
+  
+          if (success && id) {
+            console.log("Feedback created successfully");
+            router.push(`/ai-interview/${interviewId}/feedback`);
+          }else{
+            console.error("Failed to create feedback");
+            router.push('/ai-interview');
+          }
+      } catch (error) {
+        console.error("Error generating feedback:", error);
+        router.push('/');
+      }
       };
       if (status === CallStatus.FINISHED) {
         handleGenerateFeedback(messages);
       }
-    },[status, feedbackId, interviewId, router, type, userId,messages])
+    },[status])
     
     const handleCall = async()=>{
         setStatus(CallStatus.CONNECTING);
