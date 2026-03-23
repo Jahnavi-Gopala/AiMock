@@ -4,6 +4,7 @@ import { db } from "@/lib/prisma";
 import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
 import { feedbackSchema } from "../app/lib/schema";
+// import { redirect } from "next/navigation";
 
 
 export async function createFeedback(params: CreateFeedbackParams) {
@@ -13,16 +14,20 @@ export async function createFeedback(params: CreateFeedbackParams) {
     const user = await db.user.findUnique({
       where: { clerkUserId: clerkId },
     });
+
     if (!user) {
-      throw new Error("User not found in database. Sync your Clerk user first.");
+      return {
+        success: false,
+        error: "User not found",
+      };
     }
 
     const formattedTranscript = transcript
-      .map(
+      ?.map(
         (sentence: { role: string; content: string }) =>
           `- ${sentence.role}: ${sentence.content}\n`
       )
-      .join("");
+      .join("\n") || "";
 // @ts-ignore
     const {
       object: {
@@ -33,7 +38,7 @@ export async function createFeedback(params: CreateFeedbackParams) {
         finalAssessment,
       },
     } = await generateObject({
-      model: google("gemini-2.0-flash"),
+      model: google("gemini-2.5-flash"),
       schema: feedbackSchema,
       prompt: `
       You are an AI interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories. Be thorough and detailed in your analysis. Don't be lenient with the candidate. If there are mistakes or areas for improvement, point them out.

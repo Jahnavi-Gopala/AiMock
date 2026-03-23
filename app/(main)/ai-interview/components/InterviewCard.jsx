@@ -32,7 +32,7 @@ const InterviewCard = ({ id, userId, role, type, techstack, createdAt,feedback }
                         </div>
                         <div className='flex flex-row gap-2 items-center justify-center'>
                             <Image src="/star.svg" alt="Star Icon" width={20} height={20} />
-                            <p>{feedback?.totalScore || '---'}/100</p>
+                            <p>{feedback?.totalScore || '0'}/100</p>
                         </div>
                     </div>
                     <div>

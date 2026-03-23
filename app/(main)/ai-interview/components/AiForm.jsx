@@ -104,6 +104,7 @@ export default function InterviewSetupPage() {
     
     const data = await res.json();   // ⭐ add this
     console.log(data);
+    toast.success("Interview setup successful!!!");
 
     // Navigate to next page
     router.push('/ai-interview/interviewRoom');   // change route if needed

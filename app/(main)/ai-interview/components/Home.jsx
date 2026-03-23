@@ -8,7 +8,7 @@ import InterviewCard from "./InterviewCard";
 import { useEffect, useState } from "react";
 import { BarLoader } from "react-spinners";
 import { getInterviewByUserId } from "../../../../actions/ai-interview";
-import { getFeedbacksByInterviewId } from "../../../../actions/feedback";
+import { getFeedbackByInterviewId } from "../../../../actions/feedback";
 
 const Home = () => {
   const { user, isLoaded } = useUser();
@@ -27,7 +27,7 @@ const Home = () => {
         console.log("Fetched interviews:", data);
         const feedbacks = await Promise.all(
           data.map((i) =>
-            getFeedbacksByInterviewId({
+            getFeedbackByInterviewId({
               interviewId: i.id,
               userId: user.id,
             })
@@ -86,7 +86,7 @@ const Home = () => {
         <div className="flex gap-4 overflow-x-auto no-scrollbar py-2">
         {hasPastInterviews ? (
           userInterview.map((interview, index) =>
-            interview?.id ? (
+            interview?.id && feedbacks?.[index] ? (
               <InterviewCard
                 key={String(interview.id)}
                 userId={user.id}
