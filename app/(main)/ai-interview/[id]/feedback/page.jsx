@@ -21,7 +21,7 @@ const FeedbackPage = async ({ params }) => {
 
   if (!interviews) redirect("/ai-interview");
 
-  const { role, techstack, type, level } = interview;
+  const { role, techstack, type} = interview;
 
 
   const feedback = await getFeedbackByInterviewId({
