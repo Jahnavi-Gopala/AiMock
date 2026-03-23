@@ -89,7 +89,32 @@ export async function getFeedbackByInterviewId(
         clerkUserId: clerkId, // Query through the relation!
       },
     },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  // Cast as any or specific type to resolve the red squiggly
+  return feedback as any; 
+}
+
+export async function getFeedbacksByInterviewId(
+  params: GetFeedbackByInterviewIdParams
+): Promise<Feedback | null> {
+  const { interviewId, userId: clerkId } = params;
+
+  const feedback = await db.feedback.findFirst({
+    where: {
+      interviewId: interviewId,
+      user: {
+        clerkUserId: clerkId, // Query through the relation!
+      },
+    },
     select: {
+      id: true,
+      categoryScores: true,
+      strengths: true,
+      areasForImprovement: true,
       totalScore: true,
       finalAssessment: true,
       createdAt: true,

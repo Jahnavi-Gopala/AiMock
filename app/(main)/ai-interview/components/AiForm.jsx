@@ -1,294 +1,214 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Upload, ChevronDown, Check } from 'lucide-react';
-import { useUser } from "@clerk/nextjs";
-import { useRef } from "react";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { onBoardingSchema } from '../../../lib/schema';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import useFetch from "@/hooks/use-fetch";
+import { updateUser } from "@/actions/user";
 
+const OnboardingForm = ({ industries }) => {
+  const router = useRouter();
+  const [selectedIndustry, setSelectedIndustry] = useState("");
 
-export default function InterviewSetupPage() {
-  const [interviewType, setInterviewType] = useState('Behavioral');
-  const [role, setRole] = useState('');
-  const [techStack, setTechStack] = useState('');
-  const [amount, setAmount] = useState('1 question');
-  const [level, setLevel] = useState('');
-  const [isTypeOpen, setIsTypeOpen] = useState(false);
-  const [isAmountOpen, setIsAmountOpen] = useState(false);
+  const {
+    loading: updateLoading,
+    fn: updateUserFn,
+    data: updateResult,
+  } = useFetch(updateUser);
 
-  const [profile, setProfile] = useState(null);
-  const fileRef = useRef(null);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+  } = useForm({
+    resolver: zodResolver(onBoardingSchema),
+  });
 
-    useEffect(() => {
-    fetch("/api/profile/image")
-        .then((res) => res.json())
-        .then((data) => setProfile(data.imageUrl));
-    }, []);
+  const onSubmit = async (values) => {
+    try {
+      const formattedIndustry = `${values.industry}-${values.subIndustry
+        .toLowerCase()
+        .replace(/ /g, "-")}`;
 
-    // const openFile = () => fileRef.current?.click();
-
-    const uploadImage = async (file) => {
-    const form = new FormData();
-    form.append("file", file);
-
-    await fetch("/api/profile/image", {
-        method: "POST",
-        body: form,
-    });
-
-    const res = await fetch("/api/profile/image");
-    const data = await res.json();
-    setProfile(data.imageUrl);
-    };
-
-    const handleChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) uploadImage(file);
-    };
-
-    const router = useRouter();
-
-    const handleSubmit = async(e) => {
-    e.preventDefault();
-
-    // Validation
-    if (!interviewType) {
-        toast.error("Please select interview type");
-        return;
+      await updateUserFn({
+        ...values,
+        industry: formattedIndustry,
+      });
+    } catch (error) {
+      console.error("Onboarding error:", error);
     }
+  };
 
-    if (!role.trim()) {
-        toast.error("Please enter role");
-        return;
+  useEffect(() => {
+    if (updateResult?.success && !updateLoading) {
+      toast.success("Profile completed successfully!");
+      router.push("/dashboard");
+      router.refresh();
     }
+  }, [updateResult, updateLoading]);
 
-    if (!techStack.trim()) {
-        toast.error("Please enter tech stack");
-        return;
-    }
-
-    if (!amount) {
-        toast.error("Please select interview amount");
-        return;
-    }
-
-    if (!level) {
-        toast.error("Please select interview level");
-        return;
-    }
-    // if (!profile) {
-    //     toast.error("Please upload profile picture");
-    //     return;
-    // }
-
-    // Success
-    
-    console.log(interviewType, role, techStack, amount, level);
-    
-    const res = await fetch("/api/ai-interview/interview",{
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        type: interviewType,
-        role,
-        level,
-        techstack: techStack,
-        amount: parseInt(amount),
-      }),
-    });
-    
-    const data = await res.json();   // ⭐ add this
-    console.log(data);
-    toast.success("Interview setup completed 🚀");
-
-    // Navigate to next page
-    router.push('/ai-interview/interviewRoom');   // change route if needed
-    };
-
+  const watchIndustry = watch("industry");
 
   return (
-    <div className="min-h-screen  text-white flex items-center justify-center p-4">
-      {/* Modal Container */}
-      <div className="w-full max-w-md rounded-2xl border  p-8 shadow-2xl relative overflow-hidden">
-        
-        {/* Decorative background glow
-        <div className="absolute top-0 right-0 w-64 h-64 bg-violet-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" /> */}
-
-        {/* Header */}
-        <div className="mb-8 relative z-10">
-          <div className="flex items-center gap-2 mb-6">
-             {/* Logo Placeholder */}
-            <div className="w-6 h-8 rounded-lg  justify-center">
-              <span>
-                <img src="/favicon.ico" alt="logo" />
-              </span>
+    <div className="flex items-center justify-center bg-background">
+      <Card className="w-full max-w-lg mt-10 mx-2">
+        <CardHeader>
+          <CardTitle className="gradient-title text-4xl">
+            Complete Your Profile
+          </CardTitle>
+          <CardDescription>
+            Select your industry to get personalized career insights and
+            recommendations.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="industry">Industry</Label>
+              <Select
+                onValueChange={(value) => {
+                  setValue("industry", value);
+                  setSelectedIndustry(
+                    industries.find((ind) => ind.id === value)
+                  );
+                  setValue("subIndustry", "");
+                }}
+              >
+                <SelectTrigger id="industry">
+                  <SelectValue placeholder="Select an industry" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectLabel>Industries</SelectLabel>
+                    {industries.map((ind) => (
+                      <SelectItem key={ind.id} value={ind.id}>
+                        {ind.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              {errors.industry && (
+                <p className="text-sm text-red-500">
+                  {errors.industry.message}
+                </p>
+              )}
             </div>
-            <span className="text-xl font-semibold text-white">AI MOCK</span>
-          </div>
-          
-          <h1 className="text-l font-bold mb-2">Starting Your Interview</h1>
-          <p className="text-zinc-400 text-sm">
-            Customize your mock interview to suit your needs.
-          </p>
-        </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-
-          
-          {/* Interview Type */}
-          <div className="relative">
-            <label className="block text-sm text-zinc-300 mb-2">
-              What type of interview would you like to practice?
-            </label>
-            <button
-              type="button"
-              onClick={() => setIsTypeOpen(!isTypeOpen)}
-              className="w-full bg-[#18181b] border border-zinc-700/50 rounded-xl px-4 py-3.5 text-left flex items-center justify-between hover:border-zinc-600 transition-colors"
-            >
-              <span className="text-zinc-100">{interviewType}</span>
-              <ChevronDown className={`w-4 h-4 text-zinc-500 transition-transform ${isTypeOpen ? 'rotate-180' : ''}`} />
-            </button>
-            
-            {isTypeOpen && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-[#18181b] border border-zinc-700 rounded-xl overflow-hidden shadow-xl z-20">
-                {['Technical', 'Behavioral', 'Both'].map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => { setInterviewType(type); setIsTypeOpen(false); }}
-                    className="w-full text-left px-4 py-3 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors flex items-center justify-between"
-                  >
-                    {type}
-                    {interviewType === type && <Check className="w-4 h-4 text-white" />}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Role */}
-          <div>
-            <label className="block text-sm text-zinc-300 mb-2">
-              What role are you focusing on?
-            </label>
-            <input
-              type="text"
-              placeholder="Select your role"
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full bg-[#18181b] border border-zinc-700/50 rounded-xl px-4 py-3.5 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-white focus:ring-1 focus:ring-white-500/50 transition-all"
-            />
-          </div>
-
-
-          {/* Level */}
-          <div>
-            <label className="block text-sm text-zinc-300 mb-2">
-              Which level are you at? (e.g. Beginner, Intermediate, Senior)
-            </label>
-            <input
-              type="text"
-              placeholder="Select your preferred level"
-              value={level}
-              onChange={(e) => setLevel(e.target.value)}
-              className="w-full bg-[#18181b] border border-zinc-700/50 rounded-xl px-4 py-3.5 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-white focus:ring-1 focus:ring-white-500/50 transition-all"
-            />
-          </div> 
-
-          {/* Tech Stack */}
-          <div>
-            <label className="block text-sm text-zinc-300 mb-2">
-              Which tech stack would you like to focus on?
-            </label>
-            <input
-              type="text"
-              placeholder="Select your preferred tech stack"
-              value={techStack}
-              onChange={(e) => setTechStack(e.target.value)}
-              className="w-full bg-[#18181b] border border-zinc-700/50 rounded-xl px-4 py-3.5 text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-white focus:ring-1 focus:ring-white-500/50 transition-all"
-            />
-          </div>  
-
-          {/* amount */}
-          <div className="relative">
-            <label className="block text-sm text-zinc-300 mb-2">
-              How many questions would you like the interview to be?
-            </label>
-            <button
-              type="button"
-              onClick={() => setIsAmountOpen(!isAmountOpen)}
-              className="w-full bg-[#18181b] border border-zinc-700/50 rounded-xl px-4 py-3.5 text-left flex items-center justify-between hover:border-zinc-600 transition-colors"
-            >
-              <span className="text-zinc-100">{amount}</span>
-              <ChevronDown className={`w-4 h-4 text-zinc-500 transition-transform ${isAmountOpen ? 'rotate-180' : ''}`} />
-            </button>
-
-            {isAmountOpen && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-[#18181b] border border-zinc-700 rounded-xl overflow-hidden shadow-xl z-20">
-                {['1 question','2 questions', '5 questions', '10 questions'].map((time) => (
-                  <button
-                    key={time}
-                    type="button"
-                    onClick={() => { setAmount(time); setIsAmountOpen(false); }}
-                    className="w-full text-left px-4 py-3 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors flex items-center justify-between"
-                  >
-                    {time}
-                    {amount === time && <Check className="w-4 h-4 text-white" />}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Profile Picture Upload */}
-          <div>
-            <label className="block text-sm text-zinc-300 mb-2">
-                Profile picture
-            </label>
-
-            <div
-                className="w-full bg-[#18181b] border border-zinc-700/50 rounded-xl px-4 py-3.5 flex items-center justify-center cursor-pointer hover:border-zinc-600 transition-colors group"
-            >
-                {profile ? (
-                <img
-                    src={profile}
-                    className="w-10 h-10 rounded-full object-cover"
-                    alt="profile"
-                />
-                ) : (
-                <div className="flex items-center gap-3 text-zinc-500 group-hover:text-zinc-400 transition-colors">
-                    <Upload className="w-5 h-5" />
-                    <span className="text-sm">Upload an image</span>
-                </div>
+            {watchIndustry && (
+              <div className="space-y-2">
+                <Label htmlFor="subIndustry">Specialization</Label>
+                <Select
+                  onValueChange={(value) => setValue("subIndustry", value)}
+                >
+                  <SelectTrigger id="subIndustry">
+                    <SelectValue placeholder="Select your specialization" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Specializations</SelectLabel>
+                      {selectedIndustry?.subIndustries.map((sub) => (
+                        <SelectItem key={sub} value={sub}>
+                          {sub}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                {errors.subIndustry && (
+                  <p className="text-sm text-red-500">
+                    {errors.subIndustry.message}
+                  </p>
                 )}
+              </div>
+            )}
 
-                <input
-                ref={fileRef}
-                type="file"
-                className="hidden"
-                accept="image/*"
-                onChange={handleChange}
-                />
+            <div className="space-y-2">
+              <Label htmlFor="experience">Years of Experience</Label>
+              <Input
+                id="experience"
+                type="number"
+                min="0"
+                max="50"
+                placeholder="Enter years of experience"
+                {...register("experience")}
+              />
+              {errors.experience && (
+                <p className="text-sm text-red-500">
+                  {errors.experience.message}
+                </p>
+              )}
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="skills">Skills</Label>
+              <Input
+                id="skills"
+                placeholder="e.g., Python, JavaScript, Project Management"
+                {...register("skills")}
+              />
+              <p className="text-sm text-muted-foreground">
+                Separate multiple skills with commas
+              </p>
+              {errors.skills && (
+                <p className="text-sm text-red-500">{errors.skills.message}</p>
+              )}
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="bio">Professional Bio</Label>
+              <Textarea
+                id="bio"
+                placeholder="Tell us about your professional background..."
+                className="h-32"
+                {...register("bio")}
+              />
+              {errors.bio && (
+                <p className="text-sm text-red-500">{errors.bio.message}</p>
+              )}
+            </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full bg-white  hover:bg-white/80 text-sm text-black font-semibold rounded-full py-4 transition-all transform active:scale-[0.98] mt-4"
-          >
-            Start Interview
-          </button>
-
-        </form>
-      </div>
+            <Button type="submit" className="w-full" disabled={updateLoading}>
+              {updateLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Complete Profile"
+              )}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
-}
+};
+
+export default OnboardingForm;

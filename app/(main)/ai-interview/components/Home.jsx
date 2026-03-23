@@ -8,7 +8,7 @@ import InterviewCard from "./InterviewCard";
 import { useEffect, useState } from "react";
 import { BarLoader } from "react-spinners";
 import { getInterviewByUserId } from "../../../../actions/ai-interview";
-import { getFeedbackByInterviewId } from "../../../../actions/feedback";
+import { getFeedbacksByInterviewId } from "../../../../actions/feedback";
 
 const Home = () => {
   const { user, isLoaded } = useUser();
@@ -27,7 +27,7 @@ const Home = () => {
         console.log("Fetched interviews:", data);
         const feedbacks = await Promise.all(
           data.map((i) =>
-            getFeedbackByInterviewId({
+            getFeedbacksByInterviewId({
               interviewId: i.id,
               userId: user.id,
             })

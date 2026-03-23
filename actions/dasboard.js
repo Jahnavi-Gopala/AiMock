@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { redirect } from "next/dist/server/api-utils";
 
 const genAI =new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
@@ -48,7 +49,9 @@ export async function getIndustryInsights() {
             clerkUserId: userId
         }
     })
-    if(!user) throw Error ("User not found");
+    if (!user) {
+    return { redirect: "/onboarding" }; // ✅ return instead
+    }
     if(!user.industryInsights){
         const insights = await generateAIInsights(user.industry);
         // const industryInsight = await db.industryInsight.upsert({

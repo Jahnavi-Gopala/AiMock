@@ -70,7 +70,7 @@ export async function getUserOnboardingStatus() {
             clerkUserId: userId
         }
     })
-    if (!user) throw Error("User not found");
+    // if (!user) throw Error("User not found");
 
     try {
         const user = await db.user.findUnique({
