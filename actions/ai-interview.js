@@ -38,6 +38,7 @@ export async function getInterviewByUserId(clerkUserId) {
         techstack: true,
         type: true,
         level: true,
+        createdAt: true,
       },
       orderBy: {
         createdAt: "desc"

@@ -89,6 +89,14 @@ export async function getFeedbackByInterviewId(
         clerkUserId: clerkId, // Query through the relation!
       },
     },
+    select: {
+      totalScore: true,
+      finalAssessment: true,
+      createdAt: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 
   // Cast as any or specific type to resolve the red squiggly

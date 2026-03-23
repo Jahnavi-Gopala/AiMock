@@ -4,17 +4,9 @@ import dayjs from 'dayjs'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-// import { getFeedbackByInterviewId } from '@/lib/actions/general.action';
+import { getFeedbackByInterviewId } from '../../../../actions/feedback';
 
-const InterviewCard = ({ id, userId, role, type, techstack, createdAt }) => {
-    const feedback =
-    // userId && id
-    // ?  getFeedbackByInterviewId({
-    //     interviewId: id,
-    //     userId,
-    // })
-    // : 
-    null;
+const InterviewCard = ({ id, userId, role, type, techstack, createdAt,feedback }) => {
     const normalizedType = /mix/gi.test(type) ? 'Mixed' : type;
     const formattedDate = dayjs(feedback?.createdAt || createdAt || Date.now()).format('MMM D, YYYY');
     return (

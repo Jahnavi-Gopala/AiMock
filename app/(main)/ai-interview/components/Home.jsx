@@ -8,12 +8,15 @@ import InterviewCard from "./InterviewCard";
 import { useEffect, useState } from "react";
 import { BarLoader } from "react-spinners";
 import { getInterviewByUserId } from "../../../../actions/ai-interview";
+import { getFeedbackByInterviewId } from "../../../../actions/feedback";
 
-function Home() {
+const Home = () => {
   const { user, isLoaded } = useUser();
   const [userInterview, setUserInterview] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [feedbacks, setFeedbacks] = useState([]);
 
+  
   useEffect(() => {
     if (!user?.id) return;
 
@@ -22,6 +25,15 @@ function Home() {
         const data = await getInterviewByUserId(user.id);
         setUserInterview(data || []);
         console.log("Fetched interviews:", data);
+        const feedbacks = await Promise.all(
+          data.map((i) =>
+            getFeedbackByInterviewId({
+              interviewId: i.id,
+              userId: user.id,
+            })
+          )
+        );
+        setFeedbacks(feedbacks);
       } catch (err) {
         console.error(err);
       } finally {
@@ -31,6 +43,7 @@ function Home() {
 
     fetchData();
   }, [user]);
+
 
   if (!isLoaded || loading) {
     return <BarLoader className="mt-4" width={"100%"} color="gray" />;
@@ -72,7 +85,7 @@ function Home() {
         </h2>
         <div className="flex gap-4 overflow-x-auto no-scrollbar py-2">
         {hasPastInterviews ? (
-          userInterview.map((interview) =>
+          userInterview.map((interview, index) =>
             interview?.id ? (
               <InterviewCard
                 key={String(interview.id)}
@@ -82,6 +95,7 @@ function Home() {
                 type={interview.type}
                 techstack={interview.techstack}
                 createdAt={interview.createdAt}
+                feedback={feedbacks[index]}
               />
             ) : null
           )
