@@ -19,7 +19,7 @@ const FeedbackPage = async ({ params }) => {
 
   const interview = interviews.find((item) => item.id === id);
 
-  if (!interview) redirect("/ai-interview");
+  if (!interviews) redirect("/ai-interview");
 
   const { role, techstack, type, level } = interview;
 
